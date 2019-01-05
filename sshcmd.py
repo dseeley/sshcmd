@@ -42,6 +42,9 @@ class SSHCmd(object):
 
         # print("SSH connection established to " + hostname + " as " + username)
 
+    def get_sftpClient(self):
+        return self.remote_conn_client.open_sftp()
+
 
 # Executes a command on the remote host.
 class SSHCmdExec(SSHCmd):
@@ -58,6 +61,10 @@ class SSHCmdExec(SSHCmd):
                 rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
                 if len(rl) > 0:
                     recv_buf += stdout.channel.recv(1024)
+
+            # Remove leading newlines and trailing newlines/spaces
+            recv_buf = recv_buf.lstrip("\r\n").rstrip(" \r\n")
+
             return recv_buf
         else:
             return "*** CMD (" + command_string + ") FAILED ***"
@@ -70,7 +77,7 @@ class SSHCmdSendAll(SSHCmd):
         self.remote_conn_sh = None
         self.cmdPrompt = ""
 
-        self.remote_conn_sh = self.remote_conn_client.invoke_shell()
+        self.remote_conn_sh = self.remote_conn_client.invoke_shell(width=640)
         self.remote_conn_sh.setblocking(0)
         self.remote_conn_sh.settimeout(5)
 
@@ -105,7 +112,7 @@ class SSHCmdSendAll(SSHCmd):
         # print("Command is: {0}".format(command_string))
 
         # Normalise string to remove trailing carriage returns, then add one back.
-        self.remote_conn_sh.sendall(command_string.rstrip("[\r\n]*") + "\n")
+        self.remote_conn_sh.sendall(command_string.rstrip("\r\n") + "\n")
         i = 0
         while i <= 50:
             if self.remote_conn_sh.recv_ready():
@@ -137,5 +144,8 @@ class SSHCmdSendAll(SSHCmd):
 
         # Change \r\n to \n
         normalised_output = normalised_output.replace("\r\n", "\n")
+
+        # Remove leading newlines and trailing newlines/spaces
+        normalised_output = normalised_output.lstrip("\r\n").rstrip(" \r\n")
 
         return normalised_output
