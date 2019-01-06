@@ -26,10 +26,13 @@ class SSHCmd(object):
 
         # initiate SSH connection
         try:
-            if password:
+            if pkeyfile:
+                if password:
+                    self.remote_conn_client.connect(hostname=hostname, username=username, key_filename=pkeyfile, password=password, timeout=10, look_for_keys=False, allow_agent=False)
+                else:
+                    self.remote_conn_client.connect(hostname=hostname, username=username, key_filename=pkeyfile, timeout=10, look_for_keys=False, allow_agent=False)
+            else:
                 self.remote_conn_client.connect(hostname=hostname, username=username, password=password, timeout=10, look_for_keys=False, allow_agent=False)
-            elif pkeyfile:
-                self.remote_conn_client.connect(hostname=hostname, username=username, key_filename=pkeyfile, timeout=10, look_for_keys=False, allow_agent=False)
         except socket.error as sock_err:
             print "Connection timed-out to " + hostname  # + "\n\n" + str(sock_err)
             exit(1)

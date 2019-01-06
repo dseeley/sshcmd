@@ -14,7 +14,7 @@ e.g.:
 ```python
 import sshcmd
 
-cnx = sshcmd.SSHCmdExec(hostname='192.168.0.1', username='username', pkeyfile='./id_rsa')
+cnx = sshcmd.SSHCmdExec(hostname='192.168.0.1', username='username', pkeyfile='./id_rsa', password='pkey_pass')
 print cnx.exec_command("ls -la /etc/")
 
 cnx = sshcmd.SSHCmdSendAll(hostname='192.168.0.1', username='username', password='userpass')
