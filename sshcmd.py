@@ -45,32 +45,20 @@ class SSHCmd(object):
 
         # print("SSH connection established to " + hostname + " as " + username)
 
+    # Create a sftp client connection, for file transfers.
     def get_sftpClient(self):
         return self.remote_conn_client.open_sftp()
 
 
-# Executes a command on the remote host.
+# Executes a command on the remote host, and block until it's finished.
 class SSHCmdExec(SSHCmd):
     def exec_command(self, command_string):
-        recv_buf = ''
         # print("Command is: {0}".format(command_string))
 
-        stdin, stdout, stderr = self.remote_conn_client.exec_command(command_string)
+        (stdin, stdout, stderr) = self.remote_conn_client.exec_command(command_string)
+        stdout.channel.recv_exit_status()  # Blocking call
 
-        # Wait for the command to terminate, then grab the result
-        if stdout.channel.recv_exit_status() == 0:
-            # Only print data if there is data to read in the channel
-            while stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    recv_buf += stdout.channel.recv(1024)
-
-            # Remove leading newlines and trailing newlines/spaces
-            recv_buf = recv_buf.lstrip("\r\n").rstrip(" \r\n")
-
-            return recv_buf
-        else:
-            return "*** CMD (" + command_string + ") FAILED ***"
+        return stdin, stdout, stderr
 
 
 # Executes commands via a shell.  Needed for some non-standard devices (e.g. some Cisco devices).  Generally much slower than exec_command.

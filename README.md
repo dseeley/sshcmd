@@ -15,7 +15,8 @@ e.g.:
 import sshcmd
 
 cnx = sshcmd.SSHCmdExec(hostname='192.168.0.1', username='username', pkeyfile='./id_rsa', password='pkey_pass')
-print cnx.exec_command("ls -la /etc/")
+(stdin, stdout, stderr) = cnx.exec_command("ls -la /etc/")
+print stdout.read()
 
 cnx = sshcmd.SSHCmdSendAll(hostname='192.168.0.1', username='username', password='userpass')
 cnx.send_command("terminal length 0")       # Disable paging (e.g. for Cisco devices)
